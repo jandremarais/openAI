@@ -82,10 +82,15 @@ while(cnt < 100 | mean_score < 195) {
   mean_score <- mean(tail(score, 100))
   plot(score, type = "l", main = mean_score)
   
+  disc_mat <- sapply(1:nrow(obs), 
+                     function(a) {
+                       c(rep(0, a-1), gam_pam^(0:(nrow(obs)-a)))
+                     })
+  
   episode_data <- obs %>% 
     mutate(action = action,
            reward = 1) %>% 
-    mutate(q = rev(cumsum(reward * gam_pam^(0:(length(reward)-1))))) %>% 
+    mutate(q = reward %*% disc_mat %>% as.numeric) %>% 
     select(-reward)
   
   hist_data <- bind_rows(hist_data, episode_data)
